@@ -18,7 +18,26 @@ from rest_framework.response import Response
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import SignUpSerializer
+from .serializers import *
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
+
+class GetUserDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            user = request.user
+            serializer = CustomUserSerializer(user)
+            return Response({'success':True,
+                             'data':serializer.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'success':False,
+                             'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
 
 @swagger_auto_schema(
     operation_description="Update user details",
@@ -42,9 +61,10 @@ from .serializers import SignUpSerializer
 
 # Endpoint for updating user details
 class UpdateUserDetails(generics.UpdateAPIView):
-    serializer_class = SignUpSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
+    serializer_class = UpdateUserSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
 
     def get_object(self):
         return self.request.user
@@ -76,17 +96,16 @@ class UserTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         try:
             response = super().post(request, *args, **kwargs)
-            # Customize the success response here if needed
             custom_data = {'message': 'Login successful',
                            'success': True}
             custom_data.update(response.data)
             return Response(custom_data, status=status.HTTP_200_OK)
         except Exception as e:
-            return self.handle_exception(e)
+            return Response({'success':True,'error':str(e)},status=status.HTTP_400_BAD_REQUEST)
         
 # Endpoint for user signup
 class SignUp(GenericAPIView):
-    serializer_class = serializers.SignUpSerializer
+    serializer_class = SignUpSerializer
     def post(self, request):
         data = request.data
         email = data.get('email')
@@ -124,7 +143,7 @@ class SignUp(GenericAPIView):
 
 # Endpoint for email verification
 class VerifyEmail(GenericAPIView ):
-    serializer_class = serializers.EmailVerificationSerializer
+    serializer_class = EmailVerificationSerializer
 
     token_param_config = openapi.Parameter(
         'token', in_=openapi.IN_QUERY, description='Description', type=openapi.TYPE_STRING)
@@ -149,10 +168,30 @@ class VerifyEmail(GenericAPIView ):
                                       'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
         
 
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        if password:
+            instance.set_password(password)
+            instance.save()
+        return instance
+
+
+
 class PasswordRequestChange(GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = serializers.PasswordRequestChangeSerializer
-    
+    @swagger_auto_schema(
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        required=['email'],  # Corrected to 'email'
+        properties={
+            'email': openapi.Schema(
+                type=openapi.TYPE_STRING,  # Use TYPE_STRING for email
+                format=openapi.FORMAT_EMAIL,  # Specify format for email
+                description='Provide the email to get link for resetting password.'
+            ),
+        }
+    )
+)   
     def post(self, request):
         data = request.data
         email = data.get('email')
@@ -177,3 +216,47 @@ class PasswordRequestChange(GenericAPIView):
             'email_subject': 'Reset your password'
         }
         Util.send_email(data=data)
+
+    def get_serializer_class(self):
+        return None 
+
+
+class PasswordReset(GenericAPIView):
+    serializer_class=PasswordResetSerializer
+
+    token_param_config = openapi.Parameter(
+        'token', in_=openapi.IN_QUERY, description='Description', type=openapi.TYPE_STRING)
+
+    @swagger_auto_schema(manual_parameters=[token_param_config])
+    def get(self, request):
+        token = request.GET.get('token')
+        try:
+            payload = jwt.decode(token, options={"verify_signature": False})
+            print(payload)
+            user = CustomUser.objects.get(id=payload['user_id'])
+            return response.Response({'success':True,'message': 'Token verified', 'user_id': user.id}, status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError as identifier:
+            return response.Response({'success':False,
+                                      'error': 'Token Expired'}, status=status.HTTP_400_BAD_REQUEST)
+        except jwt.exceptions.DecodeError as identifier:
+            return response.Response({'success':False,
+                                      'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        token = request.GET.get('token')
+        try:
+            payload = jwt.decode(token, options={"verify_signature": False})
+            user = CustomUser.objects.get(id=payload['user_id'])
+            
+            # Use the serializer to validate and update the password
+            serializer = self.get_serializer(user, data=request.data)
+            serializer.is_valid(raise_exception=True)  # Validate the data
+            serializer.save()  # Save the new password
+            
+            return response.Response({'success': True, 'message': 'Password reset successful'}, status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError:
+            return response.Response({'success': False, 'error': 'Token Expired'}, status=status.HTTP_400_BAD_REQUEST)
+        except jwt.exceptions.DecodeError:
+            return response.Response({'success': False, 'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+        except CustomUser.DoesNotExist:
+            return response.Response({'success': False, 'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)

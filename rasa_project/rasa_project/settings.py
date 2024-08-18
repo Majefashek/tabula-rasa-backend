@@ -123,11 +123,12 @@ AUTH_USER_MODEL='auth_app.CustomUser'
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_USE_TLS = True
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER =config('Email_Address')
-EMAIL_HOST_PASSWORD = config('Email_Password')
+EMAIL_PORT = 465
+EMAIL_HOST_USER ='abdullahishuaibumaje@gmail.com'
+EMAIL_HOST_PASSWORD ='hyil uhvt stzi fdie'
 
 
 SWAGGER_SETTINGS = {

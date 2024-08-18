@@ -2,6 +2,12 @@ from rest_framework import serializers
 from .models import CustomUser
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'first_name', 'last_name', 'email', 'username', 'phonenumber']
+
+
 
 
 class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -56,3 +62,38 @@ class EmailVerificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['token']
+
+
+class PasswordResetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['password']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+    def update(self, instance, validated_data):
+        # Extract the password from the validated data
+        password = validated_data.get('password', None)
+        # Set the password for the user
+        if password:
+            instance.set_password(password)
+            instance.save()
+        return instance
+    
+class UpdateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'username']
+        extra_kwargs = {
+            'email': {'required': False},
+        }
+
+    def update(self, instance, validated_data):
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.username = validated_data.get('username', instance.username)
+        instance.save()
+        return instance
+
+
