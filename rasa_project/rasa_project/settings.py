@@ -9,7 +9,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8$_dl)vnodqz)a5&c*yioc)zj#bktrn*0w+kcsg!sx^qol7keu'
+SECRET_KEY = config('SECRET_KEY')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -68,8 +69,12 @@ WSGI_APPLICATION = 'rasa_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME':config('DB_NAME'), # database name
+        'USER':config('DB_USER'),
+        'PASSWORD':config('DB_PASSWORD'),
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 
@@ -127,8 +132,8 @@ EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
-EMAIL_HOST_USER ='abdullahishuaibumaje@gmail.com'
-EMAIL_HOST_PASSWORD ='hyil uhvt stzi fdie'
+EMAIL_HOST_USER =config('Email_Address')
+EMAIL_HOST_PASSWORD =config('Email_Password')
 
 
 SWAGGER_SETTINGS = {

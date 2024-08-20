@@ -101,7 +101,7 @@ class UserTokenObtainPairView(TokenObtainPairView):
             custom_data.update(response.data)
             return Response(custom_data, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({'success':True,'error':str(e)},status=status.HTTP_400_BAD_REQUEST)
+            return Response({'success':False,'error':str(e)},status=status.HTTP_400_BAD_REQUEST)
         
 # Endpoint for user signup
 class SignUp(GenericAPIView):

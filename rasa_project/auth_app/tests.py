@@ -32,7 +32,7 @@ class UserEndpointTests(APITestCase):
         self.assertEqual(response.data['data']['username'], 'newusername')
 
     def test_user_login(self):
-        url = reverse('token_obtain_pair')  # Update with the correct URL name
+        url = reverse('login')  # Update with the correct URL name
         data = {'username': 'testuser', 'password': 'password123'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -41,7 +41,7 @@ class UserEndpointTests(APITestCase):
         self.assertIn('refresh', response.data)
 
     def test_user_signup(self):
-        url = reverse('signup')  # Update with the correct URL name
+        url = reverse('register')  # Update with the correct URL name
         data = {'username': 'newuser', 'email': 'newuser@example.com', 'password': 'newpassword123'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

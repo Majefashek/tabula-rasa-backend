@@ -84,15 +84,20 @@ class PasswordResetSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'username']
+        fields = ['first_name', 'last_name', 'username','phonenumber']
         extra_kwargs = {
             'email': {'required': False},
         }
 
     def update(self, instance, validated_data):
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.username = validated_data.get('username', instance.username)
+    # List of fields to update
+        fields_to_update = ['first_name', 'last_name', 'username', 'phonenumber']
+        
+        for field in fields_to_update:
+            value = validated_data.get(field)
+            if value:
+                setattr(instance, field, value)  # Update the instance attribute
+
         instance.save()
         return instance
 
