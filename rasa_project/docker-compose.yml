@@ -1,0 +1,24 @@
+
+services:
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+
+  web:
+    build: .
+    command: gunicorn rasa_project.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DJANGO_SECRET_KEY: "django-insecure-8$_dl)vnodqz)a5&c*yioc)zj#bktrn*0w+kcsg!sx^qol7keu"
+      DATABASE_URL: "mysql://myuser:mypassword@db:3306/mydb"
