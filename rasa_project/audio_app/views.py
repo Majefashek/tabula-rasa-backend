@@ -17,15 +17,16 @@ class AudioBaseView(APIView):
         """Returns a configured Dejavu instance."""
         config = {
             "database": {
-                "host": "127.0.0.1",
-                "user": "root",
-                "password": "1234maje",
-                "database": "dejavu",
+                "host": "dejavu.cluster-cba0e6ewsm1v.eu-north-1.rds.amazonaws.com",  # AWS RDS endpoint
+                "user": "admin",  # Master username from RDS
+                "password": "tYN8GUI8KZkX6DGcbaXj",  # Master password from RDS
+                "database": "dejavu",  # The name of your database (you may need to create this in RDS)
             },
-            "database_type": "mysql",
+            "database_type": "mysql",  # MySQL as the database type
             "fingerprint_limit": 10,
         }
         return Dejavu.Dejavu(config)
+
 
     def handle_uploaded_file(self, file):
         """Handles file upload and saves it to a temporary directory."""
@@ -72,6 +73,7 @@ class FingerPrintAudio(AudioBaseView):
             return Response({'success': True, 'message': 'Audio successfully fingerprinted'}, status=status.HTTP_200_OK)
 
         except Exception as e:
+            raise e
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         finally:
