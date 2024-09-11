@@ -154,10 +154,30 @@ class SQLDatabase(Database):
         This also removes all songs that have been added but have no
         fingerprints associated with them.
         """
-        with self.cursor() as cur:
-            cur.execute(self.CREATE_SONGS_TABLE)
-            cur.execute(self.CREATE_FINGERPRINTS_TABLE)
-            cur.execute(self.DELETE_UNFINGERPRINTED)
+        try:
+            with self.cursor() as cur:
+                try:
+                    cur.execute(self.CREATE_SONGS_TABLE)
+                    print("CREATE_SONGS_TABLE executed successfully.")
+                except Exception as e:
+                    print(f"Error executing CREATE_SONGS_TABLE: {e}")
+
+                try:
+                    cur.execute(self.CREATE_FINGERPRINTS_TABLE)
+                    print("CREATE_FINGERPRINTS_TABLE executed successfully.")
+                except Exception as e:
+                    print(f"Error executing CREATE_FINGERPRINTS_TABLE: {e}")
+
+                '''
+
+                try:
+                    cur.execute(self.DELETE_UNFINGERPRINTED)
+                    print("DELETE_UNFINGERPRINTED executed successfully.")
+                except Exception as e:
+                    print(f"Error executing DELETE_UNFINGERPRINTED: {e}")'''
+
+        except Exception as e:
+            print(f"An error occurred during setup: {e}")
 
     def empty(self):
         """
@@ -273,7 +293,7 @@ class SQLDatabase(Database):
             values.append((hash, sid, offset))
 
         with self.cursor() as cur:
-            for split_values in grouper(values, 1000):
+            for split_values in grouper(values, 10):
                 cur.executemany(self.INSERT_FINGERPRINT, split_values)
 
     def return_matches(self, hashes):
