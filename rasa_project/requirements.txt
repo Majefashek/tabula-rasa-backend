@@ -22,7 +22,6 @@ numpy==2.1.1
 packaging==24.1
 pillow==10.4.0
 psycopg2==2.9.9
-PyAudio==0.2.14
 pycparser==2.22
 pydub==0.25.1
 PyJWT==2.9.0
