@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def generate_s3_signed_url(file_name, content_type, expiration=3600):
+def generate_s3_signed_url(file_path, content_type, expiration=3600):
     s3_client = boto3.client(
         's3',
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
@@ -17,7 +17,7 @@ def generate_s3_signed_url(file_name, content_type, expiration=3600):
             'put_object',
             Params={
                 'Bucket': settings.AWS_STORAGE_BUCKET_NAME,
-                'Key': file_name,
+                'Key': file_path,
                 'ContentType': content_type
             },
             ExpiresIn=expiration

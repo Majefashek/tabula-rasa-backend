@@ -35,7 +35,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'drf_yasg',
-    'audio_app'
+    'audio_app',
+    'storages'
 ]
 
 MIDDLEWARE = [
@@ -69,7 +70,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'rasa_project.wsgi.application'
 
+'''
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
+'''
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -168,10 +177,8 @@ if not DEBUG:
     # and renames the files with unique names for each version to support long-term caching
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-
-AWS_ACCESS_KEY_ID = config('YOUR_AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = config('YOUR_AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = config('YOUR_AWS_STORAGE_BUCKET_NAME')
-AWS_S3_REGION_NAME = config('YOUR_AWS_S3_REGION_NAME')
-AWS_S3_CUSTOM_DOMAIN = config(f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com")
-
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"

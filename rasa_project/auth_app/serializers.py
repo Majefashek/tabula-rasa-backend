@@ -1,12 +1,11 @@
 from rest_framework import serializers
 from .models import CustomUser
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
+from rest_framework.exceptions import ValidationError
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['id', 'first_name', 'last_name', 'email', 'username', 'phonenumber']
-
 
 
 
@@ -15,17 +14,27 @@ class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
     password = serializers.CharField()
 
     def validate(self, attrs):
-        data = super().validate(attrs)
         email = attrs.get("email", "")
         password = attrs.get("password", "")
+        
+        # Fetch the user
+        user = CustomUser.objects.filter(email=email).first()
+        
+        # Check if user exists
+        if user is None:
+            raise ValidationError({"email": "No user found with this email."})
+        
+        # Validate the password
+        if not user.check_password(password):
+            raise ValidationError({"password": "Invalid password."})
 
-        # Validate student credentials
-        user = CustomUser.objects.filter(email=email,is_verified=True).first()
-        if user and user.check_password(password):
-            return data
-        else:
-            raise serializers.ValidationError("Invalid credentials")
+        # Check if the user account is verified
+        if not user.is_verified:
+            raise ValidationError({"account": "Please activate your account."})
 
+        # If everything is valid, generate tokens using the parent class logic
+        data = super().validate(attrs)
+        return data
 
 
 

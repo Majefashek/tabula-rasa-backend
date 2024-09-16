@@ -9,7 +9,7 @@ class MyAudioFile(models.Model):
     """
     file_name = models.CharField(max_length=255,null=True,blank=True)
     file_hash = models.CharField(max_length=100, unique=True)
-    myaudio_url = models.URLField(max_length=500, blank=True, null=True)
+    s3_key = models.CharField(max_length=600, blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     contributor= models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 

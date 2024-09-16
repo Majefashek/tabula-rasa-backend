@@ -93,17 +93,22 @@ class UpdateUserDetails(generics.UpdateAPIView):
 # Endpoint for user login
 class UserTokenObtainPairView(TokenObtainPairView):
     serializer_class = UserTokenObtainPairSerializer
+
     def post(self, request, *args, **kwargs):
         try:
             response = super().post(request, *args, **kwargs)
-            custom_data = {'message': 'Login successful',
-                           'success': True}
+            custom_data = {
+                'message': 'Login successful',
+                'success': True
+            }
             custom_data.update(response.data)
             return Response(custom_data, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            # Catch ValidationError and return the specific error messages
+            return Response({'success': False, 'errors': e.detail}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            raise e
-            return Response({'success':False,'error':'this is the error str(e)'},status=status.HTTP_400_BAD_REQUEST)
-        
+            # Catch other exceptions if necessary
+            return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 # Endpoint for user signup
 class SignUp(GenericAPIView):
     serializer_class = SignUpSerializer
@@ -126,7 +131,7 @@ class SignUp(GenericAPIView):
         self.send_verification_email(request, user, tokens)
 
         if not user_exists:
-            return response.Response({'success':True,'user_data': user, 'access_token': str(tokens)}, status=status.HTTP_201_CREATED)
+            return response.Response({'success':True,'user_data': user}, status=status.HTTP_201_CREATED)
         else:
             return response.Response({'success':False,'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -202,7 +207,7 @@ class PasswordRequestChange(GenericAPIView):
             user = CustomUser.objects.get(email=email)
             tokens = RefreshToken.for_user(user).access_token
             self.send_password_reset_email(request, user, tokens)
-            return response.Response({'success':True,'message': 'Password reset link sent to your email', 'access_token': str(tokens)}, status=status.HTTP_200_OK)
+            return response.Response({'success':True,'message': 'Password reset link sent to your email'}, status=status.HTTP_200_OK)
         else:
             return response.Response({'success':False,'error': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
 
